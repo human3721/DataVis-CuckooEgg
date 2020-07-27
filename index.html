@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<script src = "http://d3js.org/d3.v3.min.js"><\script>
+<html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
 
 <style> 
-.link line {stroke: black;}
-.node circle {stroke:black; fill:white;}
-.chart rect {fill: steelblue}
-.node text{text-anchor: middle; font-size:20px}
+.chart rect {fill: steelblue;}
 #tooltip{
 	opacity:0;
 	position: absolute;
@@ -17,41 +14,79 @@
 </style>
 
 <html>
-<head><tile> Cuckoo Egg Size Comparison </tile></head>
-<body>
-<p>Description: Length and breadth measurements of 120 eggs lain in the nests of six different species of host bird. </p>
-<p>Data location: </p>
-<a href="https://vincentarelbundock.github.io/Rdatasets/doc/DAAG/cuckoos.html">https://vincentarelbundock.github.io/Rdatasets/doc/DAAG/cuckoos.html</a> 
+<head><tile> 80 Cereals </tile></head>
 
-<svg class = "chart"></svg>
+<body>
+<p>Description: Nutrition data on 80 cereal products </p>
+<p>Data location: </p>
+<a href="https://www.kaggle.com/crawford/80-cereals">https://www.kaggle.com/crawford/80-cereals</a> 
+
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<style> circle {fill: lightblue; stroke: black;} 
+#tooltip{
+	opacity:0;
+	position: absolute;
+	text-align: center;
+	width:60px;height:40px;
+	background: white;
+	border: 0px;
+}
+</style>
+<body onload='init()'>
+<svg width=500 height=500>
+</svg>
+
 <div id = "tooltip"></div>
 
 <script>
-var width = 120, height =300;
+async function init() {
 
-var data = [4,8,15,16,23,42];
-document.getElementById("data").innerHTML = data;
+const data = await d3.csv('https://raw.githubusercontent.com/human3721/DataVis-CuckooEgg/master/cuckoos.csv');
+  var margin = 50;
+  var width = 400;
+  var height = 400;
 
-var x=d3.scaleLinear().domain([0,6]).range([0, width]);
-var y=d3.scaleLinear().domain([0,42]).range([height, 0]);
+  var xScale = d3.scaleLinear().domain([19,25]).range([0,width ]);
+  var xAxis = d3.axisBottom()
+            .scale(xScale)
+            .ticks(4, "~s")
+            .tickValues([19, 21, 23, 25]);
 
-var tooltip = d3.select("#tooltip");
+  var yScale = d3.scaleLinear().domain([15,18]).range([height ,0]);
+  var yAxis = d3.axisLeft()
+            .scale(yScale )
+            .ticks(4, "~s")
+            .tickValues([15, 16, 17, 18]);
 
-d3.select(".chart").attr("width", width)
-	.attr("height", height)
-	.selectAll("rect")
-	.data(data)
-	.enter().append("rect")
-	.attr("width",19)
-	.attr("height",function(d) {return height-y(d); })
-	.attr("x",function(d,i) {return x(i); })
-	.attr("y",function(d) {return y(d); })
-	.on("mouseover", function(d,i) {
+  var tooltip = d3.select("#tooltip");
+
+  d3.select("svg")
+    .attr("width", width+2*margin)
+    .attr("height", height +2*margin)
+    .append("g")
+    .attr("transform","translate(" + margin + "," + margin + ")")
+    .selectAll("circle").data(data)
+    .enter().append("circle")
+    .attr("cx", function(d) {return xScale(+[d.length]);}) //
+    .attr("cy", function(d) {return yScale(+[d.breadth]);})
+    .attr("r", function(d) {return (+[d.EngineCylinders]+2);})
+    .on("mouseover", function(d,i) {
 		tooltip.style("opacity",1)
 			.style("left", (d3.event.pageX) + "px")
 			.style("top", (d3.event.pageY) + "px")
-			.html("Item #" +i+" is "+d);
-	})
-	.on("mouseout",function(){tooltip.style("opacity",0)})
+			.html("length" + " = "+[d.length]+ "<br>breadth"+ " = "+[d.breadth]);
+    })
+    .on("mouseout",function() {tooltip.style("opacity",0)});
+
+  d3.select("svg").append("g")
+       .attr("transform","translate("+margin+","+margin+")")
+       .call(yAxis)
+
+  d3.select("svg").append("g")
+       .attr("transform","translate("+margin+","+(height+margin)+")")
+       .call(xAxis)
+
+}
 </script>
-</body></html>
+</body>
+</html>
